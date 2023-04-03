@@ -20,7 +20,7 @@ loadMoreBtn.style.display = "none";
 
 const apiPixabay = new ApiPixaby();
 
-// const totalPages = totalHits / 40;
+// const totalPages = apiPixabay.totalHits / 40;
 
 function onSubmit(evt) {
   evt.preventDefault();
@@ -34,25 +34,43 @@ function onSubmit(evt) {
 
   apiPixabay.resetPage();
   apiPixabay.fetchArticles()
-    .then(hits => {
+    .then(data => {
+      if (data.total === 0) {
+      loadMoreBtn.style.display = "none";
+        Notiflix.Notify.failure("Sorry, there are no images matching your search query. Please try again.");
+      }
+
       clearHitsContainer();
-      renderHitsMarkup(hits);
-      Notify.success(`Hooray! We found totalHits images.`);
+      renderHitsMarkup(data.hits);
       loadMoreBtn.style.display = "block";
       lightbox.refresh();
+      Notify.success(`Hooray! We found ${data.totalHits} images.`);
     })
     .catch(error => {
       clearHitsContainer();
+      console.log(error.message);
       loadMoreBtn.style.display = "none";
+      Notify.failure(`Sorry, there are no images matching your search query ${apiPixabay.query}. Please try again.`);
     });
 }
 
-function onLoadMore(e) {
+
+
+function onLoadMore() {
   apiPixabay.fetchArticles()
-    .then(hits => {
-      renderHitsMarkup(hits);
+    .then(data => {
+      // Перевіряємо користувача що він дійшов до кінця колекції, ховаємо кнопку і виводимо повідомлення
+      if (data.hits.length < 40) {
+        loadMoreBtn.style.display = "none";
+        Notify.info("We're sorry, but you've reached the end of search results.");
+      }
+
+      renderHitsMarkup(data.hits);
       lightbox.refresh();
       scrollPage();
+    })
+    .catch(error => {
+      console.log(error.message);
     });
 }
 
@@ -87,3 +105,12 @@ function scrollPage() {
     behavior: "smooth",
   });
 }
+
+// Перевіряємо користувача що він дійшов до кінця колекції, ховаємо кнопку і виводимо повідомлення
+// checkEnd(data.hits.length); // виклик функції у onLoadMore
+// function checkEnd(length) {
+//   if (length < 40) {
+//     loadMoreBtn.style.display = "none";
+//     Notify.info("We're sorry, but you've reached the end of search results.");
+//   }
+// }

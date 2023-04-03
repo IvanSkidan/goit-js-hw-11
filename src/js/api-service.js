@@ -5,7 +5,7 @@ export class ApiPixaby {
   constructor() {
     this.searchQuery = '';
     this.page = 1;
-    this.totalPages = 0;
+    this.per_page = 40;
   }
 
   fetchArticles() {
@@ -15,7 +15,7 @@ export class ApiPixaby {
       .then(data => {
         // console.log(data);
         this.incrementPage();
-        return data.hits;
+        return data;
       });
   }
 
